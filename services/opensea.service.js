@@ -24,16 +24,29 @@ async function getEventAssets(contractAddress, type = "created") {
     eventAssets = filterEventAssets(eventAssets);
     return eventAssets;
   } catch (error) {
-    console.log(
-      "Error while get eventAssets, Type: ".bgRed.cyan,
-      error.response.statusText
-    );
+    console.log("Error while get eventAssets, Type: ".bgRed.cyan, error);
     // Check error status
-    if (error.response.statusText == "Too Many Requests") {
-      return "too-many-requests";
+    if (error.response && error.response.statusText) {
+      if (error.response.statusText == "Too Many Requests") {
+        return "too-many-requests";
+      } else {
+        return false;
+      }
     } else {
       return false;
     }
+  }
+}
+
+async function getCollectionData(collectionSlug = "doodles-official") {
+  try {
+    let res = await axios({
+      method: "GET",
+      url: `https://api.opensea.io/api/v1/collection/${collectionSlug}/stats`,
+    });
+    return res.data.stats;
+  } catch (error) {
+    console.log(error);
   }
 }
 
@@ -56,4 +69,4 @@ function filterEventAssets(assets) {
   );
 }
 
-module.exports = { getEventAssets, getGasPriceMap };
+module.exports = { getEventAssets, getGasPriceMap, getCollectionData };

@@ -4,11 +4,13 @@ const SeaClient = new SeaPort();
 const {
   getEventAssets,
   getGasPriceMap,
+  getCollectionData,
 } = require("./services/opensea.service");
 const { orderBy } = require("./services/util.service");
 const { convertWeiToEth } = require("./services/web3.service");
 const BigNumber = require("bignumber.js");
 const watchList = require("./config/watchList");
+const floorPriceWatcher = require("./config/floorPriceWatchers");
 const config = require("./config");
 const state = require("./state");
 const colors = require("colors");
@@ -17,6 +19,8 @@ const colors = require("colors");
 SeaClient.connect();
 // Init watchlist
 initWatchers();
+// Init floorprice watchers
+// initFloorPriceWatchers();
 
 function initWatchers() {
   let throttle;
@@ -43,6 +47,12 @@ function initWatchers() {
     }, 500 * i);
   }
 }
+
+// async function initFloorPriceWatchers() {
+//   for (let i = 0; i <= floorPriceWatcher.length -1; i++) {
+//     const currWatcher
+//   }
+// }
 
 function stopWatchers() {
   state.watchersIntervalIds.forEach((id) => {

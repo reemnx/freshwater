@@ -13,19 +13,6 @@ const config = require("./config");
 const state = require("./state");
 const colors = require("colors");
 
-// const accountSid = "ACfc973de553636dfe543614bf5a3a3dec";
-// const authToken = "19c23a904766ce9423da7ed1f3206520";
-// const client = require("twilio")(accountSid, authToken);
-
-// client.messages
-//   .create({
-//     body: "Reem test",
-//     messagingServiceSid: "MGf493ab523c805e68b84b7a7df10f9304",
-//     to: "+972523992033",
-//   })
-//   .then((message) => console.log(message.sid))
-//   .done();
-
 // Connect to seaPort using ./config.js params
 SeaClient.connect();
 // Init watchlist
@@ -161,6 +148,7 @@ async function extractValidOrderFromAssets(potetialAssets, watcher) {
         console.log(`Fullfill order failed, re-init watchers...`);
         state.isFullFillOrderActive = false;
         initWatchers();
+        return;
       }
     }
   }

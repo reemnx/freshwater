@@ -40,7 +40,7 @@ class SeaPort {
       });
       return transactionHash;
     } catch (error) {
-      if (error.includes("insufficient funds")) {
+      if (JSON.stringify(error).includes("insufficient")) {
         // Todo: actuall notify the user
         console.log("$$ Not enough funds $$ notify user...".bgRed.white);
       } else {

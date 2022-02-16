@@ -9,7 +9,7 @@ const BASE_HEADERS = {
 const colors = require("colors");
 
 async function getEventAssets(contractAddress, type = "created") {
-  const freshRateInSeconds = 999;
+  const freshRateInSeconds = 15;
   let cron = new Date().setSeconds(
     new Date().getSeconds() - freshRateInSeconds
   );

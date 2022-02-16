@@ -3,16 +3,13 @@ const HDWalletProvider = require("@truffle/hdwallet-provider");
 const opensea = require("opensea-js");
 const OpenSeaPort = opensea.OpenSeaPort;
 const Network = opensea.Network;
-const { OrderSide } = require("opensea-js/lib/types");
 const config = require("../config");
 
 const providerEngine = new HDWalletProvider({
   mnemonic: {
     phrase: config.wallet_mnemonic,
   },
-  providerOrUrl:
-    // "https://eth-mainnet.alchemyapi.io/v2/8FTGBVn5T480Fky3MV1Fxy6i5lVFzdR7",
-    "https://mainnet.infura.io/v3/c1e4ced5d9214ab58c6e89807103b731",
+  providerOrUrl: `https://mainnet.infura.io/v3/${config.infura_api_key}`,
 });
 
 const seaport = new OpenSeaPort(

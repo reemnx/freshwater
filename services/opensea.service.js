@@ -4,7 +4,7 @@ const BASE_URL = "https://api.opensea.io/api/v1/";
 const END_POINT = "events";
 const BASE_HEADERS = {
   Accept: "application/json",
-  "X-API-KEY": "e951a0d400934df4b0a2d338062d9add",
+  "X-API-KEY": process.env.OPENSEA_API_KEY,
 };
 const colors = require("colors");
 
@@ -40,7 +40,7 @@ async function getEventAssets(contractAddress, type = "created") {
 async function getGasPriceMap() {
   try {
     const priceMap = await axios({
-      url: "https://ethgasstation.info/api/ethgasAPI.json?api-key=6d79b217d0a3fa8b842df256d0c1f424794498444a5668049454198b067b",
+      url: `https://ethgasstation.info/api/ethgasAPI.json?api-key=${process.env.ETHERSCAN_API_KEY}`,
     });
     // return number in gwei
     return priceMap.data.fastest / 10;

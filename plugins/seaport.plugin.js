@@ -11,7 +11,8 @@ const providerEngine = new HDWalletProvider({
     phrase: config.wallet_mnemonic,
   },
   providerOrUrl:
-    "https://eth-mainnet.alchemyapi.io/v2/8FTGBVn5T480Fky3MV1Fxy6i5lVFzdR7",
+    // "https://eth-mainnet.alchemyapi.io/v2/8FTGBVn5T480Fky3MV1Fxy6i5lVFzdR7",
+    "https://mainnet.infura.io/v3/c1e4ced5d9214ab58c6e89807103b731",
 });
 
 const seaport = new OpenSeaPort(

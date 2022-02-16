@@ -6,9 +6,10 @@ const BASE_HEADERS = {
   Accept: "application/json",
   "X-API-KEY": "e951a0d400934df4b0a2d338062d9add",
 };
+const colors = require("colors");
 
 async function getEventAssets(contractAddress, type = "created") {
-  const freshRateInSeconds = 15;
+  const freshRateInSeconds = 999;
   let cron = new Date().setSeconds(
     new Date().getSeconds() - freshRateInSeconds
   );
@@ -23,8 +24,16 @@ async function getEventAssets(contractAddress, type = "created") {
     eventAssets = filterEventAssets(eventAssets);
     return eventAssets;
   } catch (error) {
-    console.log("Error while get eventAssets", error.response.statusText);
-    return "re-init-watchers";
+    console.log(
+      "Error while get eventAssets, Type: ".bgRed.cyan,
+      error.response.statusText
+    );
+    // Check error status
+    if (error.response.statusText == "Too Many Requests") {
+      return "too-many-requests";
+    } else {
+      return false;
+    }
   }
 }
 

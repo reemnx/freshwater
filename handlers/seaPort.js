@@ -1,4 +1,5 @@
 const { OrderSide } = require("opensea-js/lib/types");
+const colors = require("colors");
 
 class SeaPort {
   handler = {};
@@ -39,7 +40,12 @@ class SeaPort {
       });
       return transactionHash;
     } catch (error) {
-      console.error("fullFillOrder", error);
+      if (error.includes("insufficient funds")) {
+        // Todo: actuall notify the user
+        console.log("$$ Not enough funds $$ notify user...".bgRed.white);
+      } else {
+        console.error("fullFillOrder FAILED ***".bgRed.white, error);
+      }
       return "";
     }
   }

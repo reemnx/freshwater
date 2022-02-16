@@ -1,3 +1,4 @@
+require("dotenv").config();
 const { SeaPort } = require("./handlers/seaPort");
 const SeaClient = new SeaPort();
 const {
@@ -12,13 +13,33 @@ const config = require("./config");
 const state = require("./state");
 const colors = require("colors");
 
+// const accountSid = "ACfc973de553636dfe543614bf5a3a3dec";
+// const authToken = "19c23a904766ce9423da7ed1f3206520";
+// const client = require("twilio")(accountSid, authToken);
+
+// client.messages
+//   .create({
+//     body: "Reem test",
+//     messagingServiceSid: "MGf493ab523c805e68b84b7a7df10f9304",
+//     to: "+972523992033",
+//   })
+//   .then((message) => console.log(message.sid))
+//   .done();
+
 // Connect to seaPort using ./config.js params
 SeaClient.connect();
 // Init watchlist
 initWatchers();
 
 function initWatchers() {
-  const throttle = 3500;
+  let throttle;
+  if (watchList.length == 1) {
+    throttle = 1000;
+  } else if (watchList.length == 2) {
+    throttle = 1750;
+  } else {
+    throttle = 3750;
+  }
   for (let i = 0; i <= watchList.length - 1; i++) {
     setTimeout(() => {
       const watcher = watchList[i];
@@ -32,7 +53,7 @@ function initWatchers() {
         }, throttle);
         state.watchersIntervalIds.push(watcherId);
       }
-    }, 750 * i);
+    }, 500 * i);
   }
 }
 
@@ -51,9 +72,9 @@ async function activateWatcher(watcher) {
     return;
   }
   getEventAssets(watcher.contractAddress).then((assets) => {
-    if (assets == "re-init-watchers") {
+    if (assets == "too-many-requests") {
       console.log(
-        `Stop the BOT to cooldown, re-init in 60 seconds ${new Date().getHours()}:${new Date().getMinutes()}`
+        `Too many requests! stopping the BOT to cooldown, re-init in 75 seconds || ${new Date().getHours()}:${new Date().getMinutes()}`
           .bgYellow.black
       );
       state.isThrottleActive = true;
@@ -61,12 +82,13 @@ async function activateWatcher(watcher) {
       setTimeout(() => {
         state.isThrottleActive = false;
         initWatchers();
-      }, 60000);
+      }, 75000);
       return;
     }
     if (!assets || !assets.length) {
       console.log(
-        `No new listings || Past 15 sec || at ${watcher.slug}`.bgRed.white
+        `No new listings || Past 15 sec || at ${watcher.slug}`.bgCyan.white
+          .underline
       );
       return;
     }
@@ -133,11 +155,12 @@ async function extractValidOrderFromAssets(potetialAssets, watcher) {
           txHash
         );
         stopWatchers();
+        // Init Notification services.
         return;
       } else {
-        stopWatchers();
-        console.log("txHash", txHash);
-        return;
+        console.log(`Fullfill order failed, re-init watchers...`);
+        state.isFullFillOrderActive = false;
+        initWatchers();
       }
     }
   }
@@ -145,18 +168,21 @@ async function extractValidOrderFromAssets(potetialAssets, watcher) {
 
 async function getExtraGas(watcher) {
   let gas = await getGasPriceMap();
-  if (watcher.gasEagerLevel == "high") {
+
+  if (typeof gas == "number" && watcher.gasEagerLevel == "high") {
     gas = Math.round(gas * 1.3);
   }
+
   if (!gas) {
     gas = watcher.extraGasAmount;
   }
   console.log("Setting gas price", gas);
+
   const extraGas = new BigNumber(gas);
   SeaClient.setExtraGas(extraGas);
 }
 
-function isFullFillOrderActive(this) {
+function isFullFillOrderActive() {
   return state.isFullFillOrderActive;
 }
 

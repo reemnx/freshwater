@@ -10,4 +10,6 @@ module.exports = {
   network: process.env.NETWORK,
   // Opensea api key
   seaport_api_key: process.env.OPENSEA_API_KEY,
+  // NFT listing max age
+  listing_fresh_rate: 15,
 };

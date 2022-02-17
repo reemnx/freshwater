@@ -7,9 +7,10 @@ const BASE_HEADERS = {
   "X-API-KEY": process.env.OPENSEA_API_KEY,
 };
 const colors = require("colors");
+const config = require("../config/index");
 
 async function getEventAssets(contractAddress, type = "created") {
-  const freshRateInSeconds = 15;
+  const freshRateInSeconds = config.listing_fresh_rate;
   let cron = new Date().setSeconds(
     new Date().getSeconds() - freshRateInSeconds
   );

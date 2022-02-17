@@ -8,6 +8,7 @@ const BASE_HEADERS = {
 };
 const colors = require("colors");
 const config = require("../config/index");
+const state = require("../state");
 
 async function getEventAssets(contractAddress, type = "created") {
   const freshRateInSeconds = config.listing_fresh_rate;
@@ -25,10 +26,17 @@ async function getEventAssets(contractAddress, type = "created") {
     eventAssets = filterEventAssets(eventAssets);
     return eventAssets;
   } catch (error) {
-    console.log("Error while get eventAssets, Type: ".bgRed.cyan, error);
     // Check error status
     if (error.response && error.response.statusText) {
       if (error.response.statusText == "Too Many Requests") {
+        if (error.data && error.data.detail) {
+          let suggestedProcCooldown = error.data.detail
+            .split("in ")[1]
+            .charAt(0);
+          suggestedProcCooldown &&
+            (state.suggestedOpenseaCooldown = suggestedProcCooldown);
+          console.log(suggestedProcCooldown);
+        }
         return "too-many-requests";
       } else {
         return false;

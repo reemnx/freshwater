@@ -1,3 +1,5 @@
+const config = require("../config/index");
+
 function filterBy(list, type) {
   const filteredList = list.filter((item) => isParseable(item[type]));
   return filteredList;
@@ -13,6 +15,18 @@ function orderBy(list, type = "asc", key) {
   }
 }
 
+function setThrottleRate(watchersLength) {
+  let throttle;
+  if (watchersLength == 1) {
+    throttle = 1;
+  } else if (watchersLength == 2) {
+    throttle = 1.7;
+  } else {
+    throttle = 3.75;
+  }
+  config.opensea_throttle_rate = throttle;
+}
+
 function isParseable(dataToParse) {
   try {
     return JSON.parse(dataToParse);
@@ -21,4 +35,4 @@ function isParseable(dataToParse) {
   }
 }
 
-module.exports = { filterBy, isParseable, orderBy };
+module.exports = { filterBy, isParseable, orderBy, setThrottleRate };

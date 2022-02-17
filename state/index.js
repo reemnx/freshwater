@@ -1,5 +1,8 @@
 module.exports = {
-  watchersIntervalIds: [],
+  activeWatchTasks: [],
   isFullFillOrderActive: false,
   isThrottleActive: false,
+  isOrderInProcess: false,
+  isOpenseaCooldown: false,
+  suggestedOpenseaCooldown: 0,
 };

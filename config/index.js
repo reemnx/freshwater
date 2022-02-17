@@ -12,4 +12,6 @@ module.exports = {
   seaport_api_key: process.env.OPENSEA_API_KEY,
   // NFT listing max age
   listing_fresh_rate: 15,
+  // OpenSea watch throttle rate
+  opensea_throttle_rate: 3000,
 };

@@ -6,7 +6,7 @@ const {
   getGasPriceMap,
   getCollectionData,
 } = require("./services/opensea.service");
-const { orderBy } = require("./services/util.service");
+const { orderBy, setThrottleRate } = require("./services/util.service");
 const { convertWeiToEth } = require("./services/web3.service");
 const BigNumber = require("bignumber.js");
 const watchList = require("./config/watchList");
@@ -14,6 +14,7 @@ const floorPriceWatchers = require("./config/floorPriceWatchers");
 const config = require("./config");
 const state = require("./state");
 const colors = require("colors");
+const cron = require("node-cron");
 
 // Connect to seaPort using ./config.js params
 SeaClient.connect();
@@ -23,28 +24,25 @@ initWatchers();
 // initFloorPriceWatchers();
 
 function initWatchers() {
-  let throttle;
-  if (watchList.length == 1) {
-    throttle = 1000;
-  } else if (watchList.length == 2) {
-    throttle = 1750;
-  } else {
-    throttle = 3750;
-  }
+  setThrottleRate();
   for (let i = 0; i <= watchList.length - 1; i++) {
+    const watcher = watchList[i];
     setTimeout(() => {
-      const watcher = watchList[i];
       if (watcher.isActive) {
         console.log(
           `Aiming ${watcher.slug} || Price target: ${watcher.priceTarget} ETH || Gas eager mode: ${watcher.gasEagerLevel}`
             .bgGreen.white
         );
-        const watcherId = setInterval(() => {
-          activateWatcher(watcher);
-        }, throttle);
-        state.watchersIntervalIds.push(watcherId);
+
+        let watchTask = cron.schedule(
+          `*/${config.opensea_throttle_rate} * * * * *`,
+          () => {
+            activateWatcher(watcher);
+          }
+        );
+        state.activeWatchTasks.push(watchTask);
       }
-    }, 500 * i);
+    }, 750 * i);
   }
 }
 
@@ -55,17 +53,16 @@ async function initFloorPriceWatchers() {
 }
 
 function stopWatchers() {
-  state.watchersIntervalIds.forEach((id) => {
-    clearInterval(id);
+  state.activeWatchTasks.forEach((task) => {
+    task.stop();
   });
-  console.log("Watchers cleared:", state.watchersIntervalIds.length);
-  state.watchersIntervalIds = [];
+  console.log("Watchers cleared:", state.activeWatchTasks.length);
+  state.activeWatchTasks = [];
 }
 
 async function activateWatcher(watcher) {
-  if (state.isThrottleActive) {
+  if (state.isOpenseaCooldown) {
     stopWatchers();
-    console.log("Throttle active, dodge process");
     return;
   }
   getEventAssets(watcher.contractAddress).then((assets) => {
@@ -74,18 +71,18 @@ async function activateWatcher(watcher) {
         `Too many requests! stopping the BOT to cooldown, re-init in 75 seconds || ${new Date().getHours()}:${new Date().getMinutes()}`
           .bgYellow.black
       );
-      state.isThrottleActive = true;
+      state.isOpenseaCooldown = true;
       stopWatchers();
       setTimeout(() => {
-        state.isThrottleActive = false;
+        state.isOpenseaCooldown = false;
         initWatchers();
       }, 75000);
       return;
     }
     if (!assets || !assets.length) {
       console.log(
-        `No new listings || Past 15 sec || at ${watcher.slug}`.bgCyan.white
-          .underline
+        `No new listings || Past ${config.listing_fresh_rate} sec || at ${watcher.slug}`
+          .bgCyan.white.underline
       );
       return;
     }
@@ -134,31 +131,31 @@ async function extractValidOrderFromAssets(potetialAssets, watcher) {
       );
 
       // check global state for ongoing fullfillment & set state
-      if (isFullFillOrderActive()) {
+      if (state.isOrderInProcess) {
         console.log("*** Fullfill order already in process ***");
         stopWatchers();
         return;
       } else {
-        state.isFullFillOrderActive = true;
+        state.isOrderInProcess = true;
+        stopWatchers();
       }
       // set gas flow
       await getExtraGas(watcher);
-      console.log("Before fullfill: ", order.currentPrice);
+      // Todo: Validate order price again
       const txHash = await fullFillOrder(order, config.public_wallet_addrress);
 
       if (txHash) {
         console.log(
-          "Congratz! you just buy an NFT using FreshWater, txHash: ",
-          txHash
+          "Congratz! you just buy an NFT using Fresh-Soda, View etherscan: ",
+          `https://etherscan.io/tx/${txHash}`
         );
         stopWatchers();
         // Init Notification services.
         return;
       } else {
         console.log(`Fullfill order failed, re-init watchers...`);
-        state.isFullFillOrderActive = false;
+        state.isOrderInProcess = false;
         initWatchers();
-        return;
       }
     }
   }

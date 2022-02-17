@@ -10,7 +10,7 @@ const { orderBy } = require("./services/util.service");
 const { convertWeiToEth } = require("./services/web3.service");
 const BigNumber = require("bignumber.js");
 const watchList = require("./config/watchList");
-const floorPriceWatcher = require("./config/floorPriceWatchers");
+const floorPriceWatchers = require("./config/floorPriceWatchers");
 const config = require("./config");
 const state = require("./state");
 const colors = require("colors");
@@ -48,11 +48,11 @@ function initWatchers() {
   }
 }
 
-// async function initFloorPriceWatchers() {
-//   for (let i = 0; i <= floorPriceWatcher.length -1; i++) {
-//     const currWatcher
-//   }
-// }
+async function initFloorPriceWatchers() {
+  for (let i = 0; i <= floorPriceWatchers.length - 1; i++) {
+    const currWatcher = floorPriceWatchers;
+  }
+}
 
 function stopWatchers() {
   state.watchersIntervalIds.forEach((id) => {

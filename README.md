@@ -1,1 +1,1 @@
-# Node env must be 12.18
+# *Out Dated* NFT Sniping Bot
